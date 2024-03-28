@@ -38,35 +38,6 @@ String.prototype.minus = function (secondString) {
     return outcome[0] === '0' ? outcome.slice(1) : outcome
 }
 
-String.prototype.divide = function (divisor) {
-    if (divisor === '0') {
-        throw new Error('Division by zero')
-    }
-
-    let dividend = this
-    let quotient = ''
-    let tempDividend = ''
-
-    for (let i = 0; i < dividend.length; i++) {
-        tempDividend += dividend.charAt(i)
-        if (compareStrings(tempDividend, divisor) < 0 && quotient.length > 0) {
-            quotient += '0'
-            continue
-        }
-
-        let tempQuotient = 0
-        while (compareStrings(tempDividend, divisor) >= 0) {
-            tempDividend = tempDividend.minus(divisor)
-            tempQuotient++
-            tempDividend = tempDividend.replace(/^0+/, '') || '0' // Remove leading zeros for next comparison.
-        }
-
-        quotient += tempQuotient.toString()
-    }
-
-    return quotient.replace(/^0+/, '') || '0' // Handle leading zeros or empty result.
-}
-
 String.prototype.multiply = function (secondString) {
     let outcome = '0'
     let zeros = ''
@@ -82,18 +53,41 @@ String.prototype.multiply = function (secondString) {
     return outcome
 }
 
+String.prototype.divide = function (divisor) {
+    if (divisor === '0') {
+        throw new Error("You musn't divide by zero!")
+    }
+
+    let dividend = this
+    let quotient = ''
+    let tempDividend = ''
+
+    for (let i = 0; i < dividend.length; i++) {
+        tempDividend += dividend[i]
+        if (compareStrings(tempDividend, divisor) < 0 && quotient.length > 0) {
+            quotient += '0'
+            continue
+        }
+
+        let tempQuotient = 0
+        while (compareStrings(tempDividend, divisor) >= 0) {
+            tempDividend = tempDividend.minus(divisor)
+            tempQuotient++
+            tempDividend =
+                tempDividend[0] === '0' ? tempDividend.slice(1) : tempDividend
+        }
+
+        quotient += tempQuotient.toString()
+    }
+
+    return quotient[0] === '0' ? quotient.slice(1) : quotient
+}
+
 function compareStrings(num1, num2) {
-    // Assuming num1 and num2 are non-negative integers represented as strings.
-    num1 = num1.replace(/^0+/, '') // Strip leading zeros
-    num2 = num2.replace(/^0+/, '')
+    num1 = num1[0] === '0' ? num1.slice(1) : num1
+    num2 = num2[0] === '0' ? num2.slice(1) : num2
     if (num1.length !== num2.length) {
         return num1.length - num2.length
     }
     return num1.localeCompare(num2)
 }
-
-console.log(
-    '4342344322343242371774332846236436876782346735677268387652367823'.divide(
-        '228348843'
-    )
-)
