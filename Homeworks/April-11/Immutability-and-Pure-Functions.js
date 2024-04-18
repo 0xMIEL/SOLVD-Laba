@@ -1,3 +1,5 @@
+// #1
+
 const calculateDiscountedPrice = (products, percentage) => {
     if (percentage < 0.01 || percentage > 100) {
         throw Error(
@@ -5,7 +7,7 @@ const calculateDiscountedPrice = (products, percentage) => {
         )
     }
 
-    const discountedProducts = products.map((product) => {
+    const discountedProducts = products.map(product => {
         return {
             ...product,
             price: Math.round(product.price * (100 - percentage)) / 100,
@@ -15,7 +17,12 @@ const calculateDiscountedPrice = (products, percentage) => {
     return discountedProducts
 }
 
-const calculateTotalPrice = (products) => {
+console.log(calculateDiscountedPrice(products, 15))
+
+
+// #2
+
+const calculateTotalPrice = products => {
     const totalPrice = products.reduce((total, currentProduct) => {
         return total + currentProduct.price
     }, 0)
@@ -36,5 +43,4 @@ const products = [
     { name: 'Nova Smartwatch', price: 199.99 },
 ]
 
-console.log(calculateDiscountedPrice(products, 15))
 console.log(calculateTotalPrice(products))
