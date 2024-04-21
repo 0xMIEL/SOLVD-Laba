@@ -1,11 +1,3 @@
-const compose = (...functions) => {
-    return input => {
-        return functions.reduce((acc, func) => {
-            return func(acc)
-        }, input)
-    }
-}
-
 // #1
 
 const getFullName = person => `${person.firstName} ${person.lastName}`
@@ -13,6 +5,14 @@ const getFullName = person => `${person.firstName} ${person.lastName}`
 console.log(getFullName({ firstName: 'John', lastName: 'Smith' }))
 
 // #2
+
+const compose = (...functions) => {
+    return input => {
+        return functions.reduce((acc, func) => {
+            return func(acc)
+        }, input)
+    }
+}
 
 const changeToLowerCase = string => string.toLowerCase()
 const splitIntoUniqueWords = text => text.match(/\w+/g)

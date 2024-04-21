@@ -34,5 +34,5 @@ const sayHi = () => {
     console.log('Hi!')
 }
 
-const repeatSayHi = repeatFunction(sayHi, -1)
+const repeatSayHi = repeatFunction(sayHi, 4)
 repeatSayHi()
