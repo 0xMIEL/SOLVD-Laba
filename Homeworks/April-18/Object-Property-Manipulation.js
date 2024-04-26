@@ -29,22 +29,19 @@ Object.defineProperties(person, {
 
 person.updateInfo = function (info) {
     for (const key in info) {
-        if (
-            Object.hasOwnProperty.call(info, key) &&
-            Object.getOwnPropertyDescriptor(this, key).writable
-        ) {
-            this[key] = info[key]
-        } else {
-            console.warn(`${key} property isn't writable!`)
+        const exists = Reflect.has(this, key)
+        const isWritable = Boolean(
+            Object.getOwnPropertyDescriptor(this, key)?.writable
+        )
+
+        if (exists && !isWritable) {
+            throw Error(`This property property isn't writable!`)
         }
+
+        Reflect.set(this, key, info[key])
     }
 }
 
-person.updateInfo({ firstName: 'Jane', age: 32 })
+// person.updateInfo({ firstName: 'Jane', age: 32 })
 
-Object.defineProperty(person, 'address', {
-    value: {},
-    writable: true,
-    enumerable: false,
-    configurable: false,
-})
+module.exports = person
