@@ -1,8 +1,8 @@
 const debounce = (func, delay) => {
     let timeout
-    return input => {
+    return (...args) => {
         clearTimeout(timeout)
-        timeout = setTimeout(() => func(input), delay)
+        timeout = setTimeout(() => func.apply(this, args), delay)
     }
 }
 

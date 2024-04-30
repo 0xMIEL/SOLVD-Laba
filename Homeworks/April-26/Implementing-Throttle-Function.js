@@ -1,7 +1,12 @@
 const throttle = (func, interval) => {
     let lastExecution = 0
-    return () => {
-        
+
+    return (...args) => {
+        const now = Date.now()
+        if (now - lastExecution >= interval) {
+            func.apply(this, args)
+            lastExecution = now
+        }
     }
 }
 
