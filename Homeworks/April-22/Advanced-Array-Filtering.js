@@ -1,31 +1,35 @@
 const customFilterUnique = (array, callback) => {
-    const uniqeElements = []
+    const memory = new Set()
 
-    return array.filter(object => {
-        const result = callback(object)
-        if (uniqeElements.indexOf(result) === -1) {
-            uniqeElements.push(result)
+    return array.filter(element => {
+        if (!callback(element)) return false
+        
+        const normalizedElement = JSON.stringify(
+            Object.entries(element).toSorted()
+        )
+
+        if (!memory.has(normalizedElement)) {
+            memory.add(normalizedElement)
             return true
         }
+
         return false
     })
 }
 
-const people = [
-    { name: 'John', age: 30 },
-    { name: 'Alice', age: 25 },
-    { name: 'Bob', age: 35 },
-    { name: 'John', age: 30 },
-    { name: 'Emily', age: 33 },
-    { name: 'Michael', age: 40 },
-    { name: 'Sarah', age: 32 },
-    { name: 'Alice', age: 25 },
-    { name: 'Emily', age: 33 },
-    { name: 'John', age: 30 },
-    { name: 'Laura', age: 29 },
-    { name: 'Alice', age: 25 },
+let arrayOfObjects = [
+    { a: 1, b: 2 },
+    { a: 1, b: 2 },
+    { c: 3, d: 4 },
+    { a: 5, b: 6 },
+    { e: 7, f: 8 },
+    { g: 9, h: 0 },
 ]
 
-const name = person => person.name
+const filterByPropertyA = obj => {
+    if (!obj || typeof obj !== 'object')
+        throw new Error('pass an object as parameter')
+    return Object.keys(obj).includes('a') ? obj : undefined
+}
 
-console.log(customFilterUnique(people, name))
+console.log(customFilterUnique(arrayOfObjects, filterByPropertyA))
