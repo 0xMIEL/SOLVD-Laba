@@ -31,7 +31,7 @@ const promisedFunction = promisify(callbackStyleFunction)
 
 promisedFunction(3)
     .then(result => {
-        console.log('Promised function result:', result) // Expected: 6
+        console.log('Promised function result:', result)
     })
     .catch(error => {
         console.error('Promised function error:', error)
