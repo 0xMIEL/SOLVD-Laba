@@ -1,35 +1,40 @@
-class Queue {
+export class Queue {
+    // store privately items of queue
     #items = []
 
-    enqueue(value) {
-        this.#items.push(value)
+    // add element to queue
+    enqueue(element) {
+        this.#items.push(element)
     }
 
+    // remove and return front element of queue
     dequeue() {
         if (this.isEmpty()) {
             return null
         }
-
         return this.#items.shift()
     }
 
-    peak() {
+    // return front element of queue without removing it
+    peek() {
         if (this.isEmpty()) {
             return null
         }
-
         return this.#items[0]
     }
 
+    // check if queue is empty
     isEmpty() {
         return this.#items.length === 0
     }
 
-    clear() {
-        this.#items = []
+    // return size of queue
+    size() {
+        return this.#items.length
     }
 
-    display() {
-        console.log(this.#items.join(' <- '))
+    // clear queue
+    clear() {
+        this.#items = []
     }
 }

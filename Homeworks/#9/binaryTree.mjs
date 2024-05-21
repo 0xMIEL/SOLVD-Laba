@@ -3,27 +3,15 @@ class TreeNode {
         this.value = value
         this.left = null
         this.right = null
-        this.count = 1
     }
 }
 
 class BinaryTree {
+    // store privately root of binary tree
     #root = null
-    #type
 
-    constructor(type = 'number') {
-        this.#type = type
-    }
-
-    #checkValueType(value) {
-        if (typeof value !== this.#type) {
-            throw TypeError(`This binary tree store only ${this.#type}s`)
-        }
-    }
-
+    // insert node into binary tree
     insert(value) {
-        this.#checkValueType(value)
-
         const newNode = new TreeNode(value)
 
         if (this.#root === null) {
@@ -31,76 +19,74 @@ class BinaryTree {
             return
         }
 
-        let currentNode = this.#root
+        let current = this.#root
+        let parent
 
-        while (currentNode) {
-            if (value < currentNode.value) {
-                if (currentNode.left === null) {
-                    currentNode.left = newNode
+        while (true) {
+            parent = current
+            if (value < current.value) {
+                current = current.left
+                if (current === null) {
+                    parent.left = newNode
                     break
                 }
-
-                currentNode = currentNode.left
-            } else if (value > currentNode.value) {
-                if (currentNode.right === null) {
-                    currentNode.right = newNode
-                    break
-                }
-
-                currentNode = currentNode.right
             } else {
-                currentNode.count++
-                break
+                current = current.right
+                if (current === null) {
+                    parent.right = newNode
+                    break
+                }
             }
         }
     }
 
-    remove(value) {
-        if (this.#root === null) {
-            throw new Error('There is no any nodes in tree!')
-        }
+    // search for node with given value
+    search(value) {
+        let current = this.#root
 
-        let currentNode = this.#root
-
-        while (currentNode !== null) {
-            if (value < currentNode.value) {
-                currentNode = currentNode.left
-            } else if (value > currentNode.value) {
-                currentNode = currentNode.right
+        while (current !== null) {
+            if (value === current.value) {
+                return true
+            } else if (value < current.value) {
+                current = current.left
             } else {
-                break
+                current = current.right
             }
         }
 
-        if (currentNode === null) return null
-        return currentNode
+        return false
     }
 
-    #findMaxNode(node) {
-        let currentNode = node
-        while (node.right) {
-            currentNode = node.right
+    // in-order traversal of binary tree
+    inOrder(node = this.#root, result = []) {
+        if (node !== null) {
+            this.inOrder(node.left, result)
+            result.push(node.value)
+            this.inOrder(node.right, result)
         }
 
-        return currentNode
+        return result
     }
 
-    display() {
-        console.log(this.#root)
+    // pre-order traversal of binary tree
+    preOrder(node = this.#root, result = []) {
+        if (node !== null) {
+            result.push(node.value)
+            this.preOrder(node.left, result)
+            this.preOrder(node.right, result)
+        }
+
+        return result
+    }
+
+    // post-order traversal of binary tree
+    postOrder(node = this.#root, result = []) {
+        if (node !== null) {
+            this.postOrder(node.left, result)
+            this.postOrder(node.right, result)
+            result.push(node.value)
+        }
+
+        return result
     }
 }
-
-const binaryTree = new BinaryTree()
-
-const randoms = []
-
-for (let i = 0; i < 20; i++) {
-    const random = Math.floor(Math.random() * 100)
-    randoms.push(random)
-    binaryTree.insert(random)
-}
-let random2 = Math.floor(Math.random() * randoms.length)
-
-let removals = binaryTree.remove(randoms[random2])
-
-console.log(random2, removals)
