@@ -1,14 +1,49 @@
 class Node {
+    #value
+    #next
+
     constructor(value) {
-        this.value = value
-        this.next = null
+        this.#value = value
+        this.#next = null
+    }
+
+    get value() {
+        return this.#value
+    }
+
+    get next() {
+        return this.#next
+    }
+
+    set value(newValue) {
+        this.#value = newValue
+    }
+
+    set next(newValue) {
+        this.#next = newValue
     }
 }
 
-class LinkedList {
+export class LinkedList {
     // store privately head and length of list
     #head = null
     #length = 0
+
+    get head() {
+        return this.#head
+    }
+
+    get length() {
+        return this.#length
+    }
+
+    set head(_) {
+        throw new Error('You cannot set head of linked list manually!')
+    }
+
+    set length(_) {
+        throw new Error('You cannot set length of linked list manually!')
+    }
 
     // insert node into linked list
     insert(value) {

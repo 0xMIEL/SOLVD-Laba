@@ -1,9 +1,17 @@
 import { Stack } from './stack.mjs'
 import { Queue } from './queue.mjs'
 
-class Graph {
+export class Graph {
     // store privately adjacency list of vertices
     #adjacencyList = new Map()
+
+    get adjacencyList() {
+        return this.#adjacencyList
+    }
+
+    set adjacencyList(_) {
+        throw new Error('You cannot set adjacency list manually!')
+    }
 
     // add vertex to graph
     addVertex(vertex) {
@@ -69,5 +77,10 @@ class Graph {
         }
 
         return result
+    }
+
+    // get all vertices in the graph
+    getVertices() {
+        return Array.from(this.#adjacencyList.keys());
     }
 }

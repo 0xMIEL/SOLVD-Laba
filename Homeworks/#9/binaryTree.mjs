@@ -1,14 +1,50 @@
 class TreeNode {
+    #value
+    #left
+    #right
+
     constructor(value) {
-        this.value = value
-        this.left = null
-        this.right = null
+        this.#value = value
+        this.#left = null
+        this.#right = null
+    }
+
+    get value() {
+        return this.#value
+    }
+
+    get left() {
+        return this.#left
+    }
+
+    get right() {
+        return this.#right
+    }
+
+    set value(newValue) {
+        this.#value = newValue
+    }
+
+    set left(newValue) {
+        this.#left = newValue
+    }
+
+    set right(newValue) {
+        this.#right = newValue
     }
 }
 
-class BinaryTree {
-    // store privately root of binary tree
+export class BinaryTree {
+    // store privately root property
     #root = null
+
+    get root() {
+        return this.#root
+    }
+
+    set root(newValue) {
+        throw new Error('You cannot set root of tree manually!')
+    }
 
     // insert node into binary tree
     insert(value) {
@@ -19,21 +55,21 @@ class BinaryTree {
             return
         }
 
-        let current = this.#root
-        let parent
+        let currentNode = this.#root
+        let parentNode
 
         while (true) {
-            parent = current
-            if (value < current.value) {
-                current = current.left
-                if (current === null) {
-                    parent.left = newNode
+            parentNode = currentNode
+            if (value < currentNode.value) {
+                currentNode = currentNode.left
+                if (currentNode === null) {
+                    parentNode.left = newNode
                     break
                 }
             } else {
-                current = current.right
-                if (current === null) {
-                    parent.right = newNode
+                currentNode = currentNode.right
+                if (currentNode === null) {
+                    parentNode.right = newNode
                     break
                 }
             }
@@ -42,15 +78,15 @@ class BinaryTree {
 
     // search for node with given value
     search(value) {
-        let current = this.#root
+        let currentNode = this.#root
 
-        while (current !== null) {
-            if (value === current.value) {
+        while (currentNode !== null) {
+            if (value === currentNode.value) {
                 return true
-            } else if (value < current.value) {
-                current = current.left
+            } else if (value < currentNode.value) {
+                currentNode = currentNode.left
             } else {
-                current = current.right
+                currentNode = currentNode.right
             }
         }
 

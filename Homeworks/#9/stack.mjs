@@ -2,6 +2,14 @@ export class Stack {
     // store privately items of stack
     #items = []
 
+    get items() {
+        return this.#items
+    }
+
+    set items(_) {
+        throw new Error('You cannot set items of stack manually!')
+    }
+
     // add element to stack
     push(element) {
         this.#items.push(element)
@@ -10,7 +18,7 @@ export class Stack {
     // remove and return top element of stack
     pop() {
         if (this.isEmpty()) {
-            return null
+            throw new Error('Stack is empty!')
         }
         return this.#items.pop()
     }
@@ -18,7 +26,7 @@ export class Stack {
     // return top element of stack without removing it
     peek() {
         if (this.isEmpty()) {
-            return null
+            throw new Error('Stack is empty!')
         }
         return this.#items[this.#items.length - 1]
     }
