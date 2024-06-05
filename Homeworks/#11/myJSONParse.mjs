@@ -2,44 +2,123 @@ import { Stack } from '../%239/stack.mjs'
 import { JSON_REG_EXP } from './jsonRegExp.mjs'
 import { data } from './data.mjs'
 
+/*  -sliceString is used to slice objects and arrays from a string of           characters-
+
+    input:
+    
+    "{
+        "name": "John",
+        "parents": ["Mia", "Bill"],
+        "location": {
+            "city" "London",
+            "country": "Great Britain"
+        }
+    }"
+
+    output: [ 
+        "["Mia", "Bill"]",
+        "{
+            "city" "London",
+            "country": "Great Britain"
+        }" ,
+        "{
+        "name": "John",
+        "parents": ["Mia", "Bill"],
+        "location": {
+            "city" "London",
+            "country": "Great Britain"
+        }
+    }
+*/
+
 const sliceString = string => {
     string = string.trim()
 
-    if (!string.startsWith('{')) throw new TypeError()
+    if (!string.startsWith('{')) throw new TypeError('It is not a JSON!')
 
-    const stack = new Stack()
-    stack.push(0)
+    const objectStack = new Stack()
+    const arrayStack = new Stack()
+    objectStack.push(0)
 
-    const result = []
+    // avoid copies of the objects and arrays
+    const result = new Set()
+
+    // slice the objects and arrays
+    const handleClosingBrackets = (stack, i) => {
+        return string.slice(stack.pop(), i + 1)
+    }
 
     for (let i = 1; i < string.length; i++) {
-        if (string[i] === '{' || string[i] === '[') {
-            stack.push(i)
+        if (objectStack.isEmpty()) throw new TypeError('Bad nesting')
+
+        const char = string[i]
+
+        // catch the objects and arrays
+        if (char === '{') {
+            objectStack.push(i)
+        } else if (char === '[') {
+            arrayStack.push(i)
         }
 
         try {
-            if (string[i] === '}' || string[i] === ']') {
-                const slice = string.slice(stack.pop(), i + 1)
-                if (result.indexOf(slice) === -1) result.push(slice)
+            if (char === '}') {
+                result.add(handleClosingBrackets(objectStack, i))
+            } else if (char === ']') {
+                result.add(handleClosingBrackets(arrayStack, i))
             }
         } catch (error) {
             throw new TypeError('Too many { or [ characters!')
         }
     }
 
-    if (!stack.isEmpty()) throw new TypeError('Too many } or ] characters!')
+    if (!objectStack.isEmpty() || !arrayStack.isEmpty())
+        throw new TypeError('Too many } or ] characters!')
 
-    return result
+    return Array.from(result)
 }
+
+/*  -referSlices is used to mark each element and
+    references to each other if they are nested
+    one inside the other-
+
+    input: [ 
+        "["Mia", "Bill"]",
+        "{
+            "city" "London",
+            "country": "Great Britain"
+        }" ,
+        "{
+        "name": "John",
+        "parents": ["Mia", "Bill"],
+        "location": {
+            "city" "London",
+            "country": "Great Britain"
+        }
+    }
+
+    output: [ 
+        "["Mia", "Bill"]",
+        "{
+            "city" "London",
+            "country": "Great Britain"
+        }" ,
+        "{
+        "name": "John",
+        "parents": <0>, <- it's a token that refer to first element of this array ("["Mia", "Bill"]") 
+        "location": <1>
+    }
+*/
 
 const referSlices = slices => {
     let result = []
 
     for (let i = 0; i < slices.length; i++) {
         let template = slices[i]
+        // add refered slice to result
         result.push(template)
 
         for (let j = i; j < slices.length; j++) {
+            // replace nesting object with its main instance
             slices[j] = slices[j].replaceAll(template, `\<${i}\>`)
         }
     }
@@ -47,36 +126,74 @@ const referSlices = slices => {
     return result
 }
 
+/* -parseSlices is used to parse objects and arrays and then 
+    merging references-
+
+    input: [ 
+        "["Mia", "Bill"]",
+        "{
+            "city" "London",
+            "country": "Great Britain"
+        }" ,
+        "{
+        "name": "John",
+        "parents": <0>, <- it's a token that refer to first element of this array ("["Mia", "Bill"]") 
+        "location": <1>
+    }
+
+    output: {
+        name: "John",
+        parents: ["Mia", "Bill"],
+        "location": {
+            city: "London",
+            country: "Great Britain"
+        }
+    }
+
+*/
+
 const parseSlices = slices => {
     const result = []
+    let spellingErrors = []
 
-    for (const slice of slices) {
+    for (let i = 0; i < slices.length; i++) {
         let parsedSlice = {}
-        if (slice[0] === '{') {
-            const tokens = [...slice.matchAll(JSON_REG_EXP.KEY_VALUE)]
+
+        if (slices[i][0] === '{') {
+            // tokenize objects using regexp with capture groups
+            const tokens = [...slices[i].matchAll(JSON_REG_EXP.KEY_VALUE)]
             tokens.forEach((token, index, array) => {
+                // catch syntax errors
+                slices[i] = slices[i].replace(token[0], '')
+
+                // merging and checking if object element has comma
                 if (token[7] === ',' || index === array.length - 1) {
                     if (token[6]) {
                         parsedSlice[token[1]] = result[token[6]]
-                        return
+                    } else {
+                        parsedSlice[token[1]] = parseToken(token)
                     }
-                    parsedSlice[token[1]] = parseToken(token)
                 } else {
                     throw new TypeError(`${token[0]} <- lack of comma!`)
                 }
             })
             result.push(parsedSlice)
-        }
-        if (slice[0] === '[') {
+        } else if (slices[i][0] === '[') {
             parsedSlice = []
-            const tokens = [...slice.matchAll(JSON_REG_EXP.KEY_VALUE)]
+            // tokenize arrays using regexp with capture groups
+
+            const tokens = [...slices[i].matchAll(JSON_REG_EXP.ARRAY_VALUES)]
             tokens.forEach((token, index, array) => {
-                if (token[7] === ',' || index === array.length - 1) {
-                    if (token[6]) {
+                // catch syntax errors
+                slices[i] = slices[i].replace(token[0], '')
+
+                // merging and checking if object element has comma
+                if (token[6] === ',' || index === array.length - 1) {
+                    if (token[5]) {
                         parsedSlice.push(result[token[5]])
-                        return
+                    } else {
+                        parsedSlice.push(parseToken(token, true))
                     }
-                    parsedSlice.push(parseToken(token, false))
                 } else {
                     throw new TypeError(`${token[0]} <- lack of comma!`)
                 }
@@ -85,15 +202,43 @@ const parseSlices = slices => {
         }
     }
 
+    // handle syntax objects
+    slices.forEach(slice => {
+        // split errors into array
+        const errors = slice.split(JSON_REG_EXP.SYNTAX_REST)
+
+        // add them to the array
+        spellingErrors.push(...errors)
+    })
+
+    // remove empty elements
+    spellingErrors = spellingErrors.filter(error => error != '')
+
+    // check if error occured
+    if (spellingErrors.length > 0) {
+        throw new TypeError(`Unknow syntax: ${spellingErrors.join('\t')}`)
+    }
+
     return result.at(-1)
 }
 
-const parseToken = (token, isKeyGroup = true) => {
-    const offset = isKeyGroup ? 0 : -1
+// parseToken is used to parse the result from RegExp capture groups
+
+const parseToken = (token, isArray = false) => {
+    const offset = isArray ? -1 : 0
+    // string
     if (token[2 + offset]) return token[2 + offset]
+
+    //number
     if (token[3 + offset]) return parseFloat(token[3 + offset])
+
+    // true
     if (token[4 + offset] === 'true') return true
+
+    // false
     if (token[4 + offset] === 'false') return false
+
+    // null
     if (token[5 + offset]) return null
 }
 
